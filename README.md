@@ -25,3 +25,13 @@ pebblehost --json servers
 The token is read from `PEBBLEHOST_API_TOKEN` by default. `--token` overrides it.
 
 The implementation follows the published OpenAPI document at https://api.pebblehost.com/api.yaml and uses the documented bearer-token authentication.
+
+## Rust CLI
+
+The Rust port is built with Cargo:
+
+```bash
+cargo install --path .
+export PEBBLEHOST_API_TOKEN=...
+pebblehost servers
+```
