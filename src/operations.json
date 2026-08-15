@@ -1,0 +1,1930 @@
+{
+  "operations": [
+    {
+      "method": "GET",
+      "path": "/api/client/account",
+      "operationId": "getUserDetails",
+      "summary": "Get user details.",
+      "tags": [
+        "Account"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/account/activity",
+      "operationId": "getUserActivityLogs",
+      "summary": "Get user activity logs.",
+      "tags": [
+        "Account"
+      ],
+      "parameters": [
+        {
+          "name": "include",
+          "in": "query",
+          "required": false,
+          "type": "array",
+          "description": "Additional relationships to include in the response"
+        },
+        {
+          "name": "filters[event]",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Filter by event type (partial)"
+        },
+        {
+          "name": "sort",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Sort by field, by default the sort order is ascending, to sort in descending order prefix the field with a hypen (`-`)"
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Page number for pagination"
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Maximum number of resources to return per-page"
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/account/deleted-servers",
+      "operationId": "getDeletedServers",
+      "summary": "Get deleted servers.",
+      "tags": [
+        "Account"
+      ],
+      "parameters": [
+        {
+          "name": "target_restore_server",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "If present and set to an ID of an active Server, a `restore_info` relation will be added to each `deleted_server` object, indicating if the deleted server has a backup and if that backup can be restored to the specified server id. The <code>id</code> of an existing record in the servers table."
+        },
+        {
+          "name": "filters[terminated_after]",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Filter servers that were terminated after a specific date"
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Page number for pagination"
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Maximum number of resources to return per-page"
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client",
+      "operationId": "getServers",
+      "summary": "Get servers.",
+      "tags": [
+        "Endpoints"
+      ],
+      "parameters": [
+        {
+          "name": "type",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Filters servers by the authenticated user's relationship to them.\n\nIf empty (the default), all servers the authenticated user has access to will be returned.\n\nIf set to `owner`, only servers the authenticated user directly owns will be returned.\n\n(Admin-only) If set to `admin`, all servers the authenticated user doesn't own will be returned.\n\n(Admin-only) If set to `admin-all`, all servers on the panel will be returned."
+        },
+        {
+          "name": "filters[uuid]",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Filter by a server's uuid"
+        },
+        {
+          "name": "filters[name]",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Filter by a server's name"
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Page number for pagination"
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Maximum number of resources to return per-page"
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/permissions",
+      "operationId": "getPermissionsList",
+      "summary": "Get permissions list.",
+      "tags": [
+        "Endpoints"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/myip",
+      "operationId": "getApiClientMyip",
+      "summary": "",
+      "tags": [
+        "Endpoints"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}",
+      "operationId": "getServer",
+      "summary": "Get server.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/resources",
+      "operationId": "getServerStatistics",
+      "summary": "Get server statistics.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/activity",
+      "operationId": "getServerActivityLogs",
+      "summary": "Get server activity logs.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [
+        {
+          "name": "include",
+          "in": "query",
+          "required": false,
+          "type": "array",
+          "description": "Additional relationships to include in the response"
+        },
+        {
+          "name": "filters[actor_id]",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Filter by actor"
+        },
+        {
+          "name": "filters[event]",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Filter by event type (partial)"
+        },
+        {
+          "name": "sort",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Sort by field, by default the sort order is ascending, to sort in descending order prefix the field with a hypen (`-`)"
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Page number for pagination"
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Maximum number of resources to return per-page"
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/activity/filters",
+      "operationId": "getServerActivityLogFilters",
+      "summary": "Get server activity log filters.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/analytics",
+      "operationId": "getServerResourceAnalytics",
+      "summary": "Get Server resource analytics.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [
+        {
+          "name": "days",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Number of days to get analytics for. Must not be greater than 10."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/import",
+      "operationId": "importServer",
+      "summary": "Import server.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/migration",
+      "operationId": "getServerMigrationLocations",
+      "summary": "Get server migration locations.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/migration",
+      "operationId": "migrateServer",
+      "summary": "Migrate server.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/settings/rename",
+      "operationId": "renameServer",
+      "summary": "Rename server.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/settings/subdomain",
+      "operationId": "setServerSubdomain",
+      "summary": "Set server subdomain.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/settings/timezone",
+      "operationId": "adjustsServerTimezone",
+      "summary": "Adjusts server timezone.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/preinstalls",
+      "operationId": "getServerPreinstalls",
+      "summary": "Get server preinstalls.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/preinstalls",
+      "operationId": "runServerPreinstall",
+      "summary": "Run server preinstall.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/projects",
+      "operationId": "getProjects",
+      "summary": "Get projects.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/projects/{version_id}",
+      "operationId": "installProjectVersion",
+      "summary": "Install project version.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/bot-node-versions",
+      "operationId": "getServerNodejsVersions",
+      "summary": "Get server Node.js versions.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/notices",
+      "operationId": "getServerNotices",
+      "summary": "Get server notices.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/notices/resources",
+      "operationId": "dismissServerResourceNotice",
+      "summary": "Dismiss server resource notice.",
+      "tags": [
+        "Server"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/adp",
+      "operationId": "getServerADP",
+      "summary": "Get Server ADP.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/adp",
+      "operationId": "enableServerADP",
+      "summary": "Enable Server ADP.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [
+        {
+          "name": "domain",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "is_pebble_subdomain",
+          "in": "query",
+          "required": true,
+          "type": "boolean",
+          "description": ""
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/client/servers/{server}/minecraft/adp",
+      "operationId": "updateServerADP",
+      "summary": "Update Server ADP.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [
+        {
+          "name": "connections_per_second_threshold",
+          "in": "query",
+          "required": true,
+          "type": "integer",
+          "description": ""
+        },
+        {
+          "name": "client_ban_seconds",
+          "in": "query",
+          "required": true,
+          "type": "integer",
+          "description": ""
+        },
+        {
+          "name": "client_allow_seconds",
+          "in": "query",
+          "required": true,
+          "type": "integer",
+          "description": ""
+        },
+        {
+          "name": "vpn_block",
+          "in": "query",
+          "required": true,
+          "type": "boolean",
+          "description": ""
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/minecraft/adp",
+      "operationId": "disableServerADP",
+      "summary": "Disable Server ADP.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/adp/settings",
+      "operationId": "getServerADPSettings",
+      "summary": "Get Server ADP Settings.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/adp/analytics",
+      "operationId": "getServerADPAnalytics",
+      "summary": "Get Server ADP Analytics.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/adp/graphs",
+      "operationId": "getServerADPGraphs",
+      "summary": "Get Server ADP Graphs.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/adp/verify",
+      "operationId": "verifyServerADPDomain",
+      "summary": "Verify Server ADP Domain.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/adp/firewall",
+      "operationId": "getServerADPIPFirewallRules",
+      "summary": "Get Server ADP IP Firewall Rules.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/adp/firewall",
+      "operationId": "createServerADPIPFirewallRule",
+      "summary": "Create Server ADP IP Firewall Rule.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/minecraft/adp/firewall/{id}",
+      "operationId": "deleteServerADPIPFirewallRule",
+      "summary": "Delete Server ADP IP Firewall Rule.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/adp/asnFirewall",
+      "operationId": "getServerADPASNFirewallRules",
+      "summary": "Get Server ADP ASN Firewall Rules.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/adp/asnFirewall",
+      "operationId": "createServerADPASNFirewallRule",
+      "summary": "Create Server ADP ASN Firewall Rule.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/minecraft/adp/asnFirewall/{id}",
+      "operationId": "deleteServerADPASNFirewallRule",
+      "summary": "Delete Server ADP ASN Firewall Rule.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/adp/countryFirewall",
+      "operationId": "listServerADPCountryFirewallRules",
+      "summary": "List Server ADP Country Firewall Rules.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/adp/countryFirewall",
+      "operationId": "createServerADPCountryFirewallRule",
+      "summary": "Create Server ADP Country Firewall Rule.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/minecraft/adp/countryFirewall/{id}",
+      "operationId": "deleteServerADPCountryFirewallRule",
+      "summary": "Delete Server ADP Country Firewall Rule.",
+      "tags": [
+        "Server - Advanced DDoS Protection"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/backups",
+      "operationId": "getServerBackups",
+      "summary": "Get server backups.",
+      "tags": [
+        "Server - Backups"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/backups",
+      "operationId": "createServerBackup",
+      "summary": "Create server backup.",
+      "tags": [
+        "Server - Backups"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/backups/status",
+      "operationId": "getServerBackupStatus",
+      "summary": "Get server backup status.",
+      "tags": [
+        "Server - Backups"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/backups/deletedRestore",
+      "operationId": "restoreDeletedServerBackup",
+      "summary": "Restore deleted server backup.",
+      "tags": [
+        "Server - Backups"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/backups/{backup}/download",
+      "operationId": "getServerBackupDownloadUrl",
+      "summary": "Get server backup download url.",
+      "tags": [
+        "Server - Backups"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/backups/{backup}/restore",
+      "operationId": "restoreServerBackup",
+      "summary": "Restore server backup.",
+      "tags": [
+        "Server - Backups"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/backups/{backup}/export",
+      "operationId": "exportServerBackup",
+      "summary": "Export server backup.",
+      "tags": [
+        "Server - Backups"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/backups/{backup}",
+      "operationId": "deleteServerBackup",
+      "summary": "Delete server backup.",
+      "tags": [
+        "Server - Backups"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/websocket",
+      "operationId": "getServerWebsocket",
+      "summary": "Get server websocket.",
+      "tags": [
+        "Server - Control"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/command",
+      "operationId": "executeServerCommand",
+      "summary": "Execute server command.",
+      "tags": [
+        "Server - Control"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/power",
+      "operationId": "setServerPower",
+      "summary": "Set server power.",
+      "tags": [
+        "Server - Control"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/databases",
+      "operationId": "getServerDatabases",
+      "summary": "Get server databases.",
+      "tags": [
+        "Server - Databases"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/databases",
+      "operationId": "createServerDatabase",
+      "summary": "Create server database.",
+      "tags": [
+        "Server - Databases"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/databases/backups",
+      "operationId": "getServerDatabaseBackups",
+      "summary": "Get server database backups.",
+      "tags": [
+        "Server - Databases"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/databases/backups/{backup}/export",
+      "operationId": "startServerDatabaseExport",
+      "summary": "Start server database export.",
+      "tags": [
+        "Server - Databases"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/databases/backups/{backup}/download",
+      "operationId": "getServerDatabaseDownloadUrl",
+      "summary": "Get server database download url.",
+      "tags": [
+        "Server - Databases"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/databases/{database}/rotate-password",
+      "operationId": "rotateServerDatabasePassword",
+      "summary": "Rotate server database password.",
+      "tags": [
+        "Server - Databases"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/databases/{database}",
+      "operationId": "deleteServerDatabase",
+      "summary": "Delete server database.",
+      "tags": [
+        "Server - Databases"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/databases/{database}/export",
+      "operationId": "getServerDatabaseDump",
+      "summary": "Get server database dump.",
+      "tags": [
+        "Server - Databases"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/databases/{database}/import",
+      "operationId": "importServerDatabase",
+      "summary": "Import server database.",
+      "tags": [
+        "Server - Databases"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/files/list",
+      "operationId": "listFiles",
+      "summary": "List files.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [
+        {
+          "name": "directory",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Directory to list files in."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/files/search",
+      "operationId": "searchFiles",
+      "summary": "Search files.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [
+        {
+          "name": "root",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Directory to start searching for files in, subdirectories will be recursed."
+        },
+        {
+          "name": "query",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "Search query to match file names against."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/files/contents",
+      "operationId": "getFile",
+      "summary": "Get file.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [
+        {
+          "name": "file",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "File path to read contents from."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/files/download",
+      "operationId": "getFileDownloadUrl",
+      "summary": "Get file download url.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [
+        {
+          "name": "file_path",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Download an individual file. (ignores root and paths). This field is required when <code>paths</code> is not present."
+        },
+        {
+          "name": "root",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Base directory to download files from. (allows downloading of folders and multiple files, download will be a .tar.gz archive)."
+        },
+        {
+          "name": "paths",
+          "in": "query",
+          "required": false,
+          "type": "array",
+          "description": "File paths to download."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/files/sizes",
+      "operationId": "getFileSizes",
+      "summary": "Get file sizes.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [
+        {
+          "name": "root",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Base directory to calculate file sizes within."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/files/sizes",
+      "operationId": "getFileSizesTill",
+      "summary": "Get file sizes till.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/files/upload",
+      "operationId": "getFileUploadUrl",
+      "summary": "Get file upload url.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/files/copy",
+      "operationId": "copyFile",
+      "summary": "Copy file.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/files/write",
+      "operationId": "writeFile",
+      "summary": "Write file.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [
+        {
+          "name": "file",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "File path to write contents to."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/files/compress",
+      "operationId": "compressFiles",
+      "summary": "Compress files.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/files/extract",
+      "operationId": "extractFile",
+      "summary": "Extract file.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/files/delete",
+      "operationId": "deleteFiles",
+      "summary": "Delete files",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/files/create-folder",
+      "operationId": "createDirectory",
+      "summary": "Create directory.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/files/chmod",
+      "operationId": "chmodFiles",
+      "summary": "Chmod files.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/files/restore",
+      "operationId": "restoreFiles",
+      "summary": "Restore files.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/client/servers/{server}/files/rename",
+      "operationId": "renameFile",
+      "summary": "Rename file.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/files/pull",
+      "operationId": "listFilePulls",
+      "summary": "List file pulls.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/files/pull",
+      "operationId": "startFilePull",
+      "summary": "Start file pull.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/files/pull/{id}",
+      "operationId": "cancelFilePull",
+      "summary": "Cancel file pull.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/operations",
+      "operationId": "getServerOperations",
+      "summary": "Get server operations.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/operations/{operation}",
+      "operationId": "cancelServerOperation",
+      "summary": "Cancel server operation.",
+      "tags": [
+        "Server - File Management"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/firewall",
+      "operationId": "getServerFirewallRules",
+      "summary": "Get server firewall rules.",
+      "tags": [
+        "Server - Firewall"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/firewall",
+      "operationId": "createServerFirewallRule",
+      "summary": "Create server firewall rule.",
+      "tags": [
+        "Server - Firewall"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/firewall/{serverFirewall}",
+      "operationId": "getServerFirewallRule",
+      "summary": "Get server firewall rule.",
+      "tags": [
+        "Server - Firewall"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/firewall/{serverFirewall}",
+      "operationId": "updateServerFirewallRule",
+      "summary": "Update server firewall rule.",
+      "tags": [
+        "Server - Firewall"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/firewall/{serverFirewall}",
+      "operationId": "deleteServerFirewallRule",
+      "summary": "Delete server firewall rule.",
+      "tags": [
+        "Server - Firewall"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/votifer",
+      "operationId": "testServerVoting",
+      "summary": "Test server voting.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/modpacks",
+      "operationId": "searchModpacks",
+      "summary": "Search modpacks.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [
+        {
+          "name": "provider",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Modpack provider to list modpacks from."
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": true,
+          "type": "integer",
+          "description": "Page number for pagination. Must be at least 1."
+        },
+        {
+          "name": "page_size",
+          "in": "query",
+          "required": true,
+          "type": "integer",
+          "description": "Maximum number of resources to return per-page. Must not be greater than 50."
+        },
+        {
+          "name": "search_query",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Optional search query to filter plugins by."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/modpacks/modpack",
+      "operationId": "getModpack",
+      "summary": "Get modpack.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [
+        {
+          "name": "provider",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Modpack provider to get a modpack from."
+        },
+        {
+          "name": "modpack_id",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "ID of the modpack. Must be at least 1 character."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/modpacks/versions",
+      "operationId": "getModpackVersions",
+      "summary": "Get modpack versions.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [
+        {
+          "name": "provider",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Modpack provider to get a modpack from."
+        },
+        {
+          "name": "modpack_id",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "ID of the modpack. Must be at least 1 character."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/modpacks/install",
+      "operationId": "installModpack",
+      "summary": "Install modpack.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/players",
+      "operationId": "getServerPlayers",
+      "summary": "Get server players.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/players/whitelist/status",
+      "operationId": "setServerWhitelist",
+      "summary": "Set server whitelist.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/client/servers/{server}/minecraft/players/whitelist",
+      "operationId": "whitelistPlayer",
+      "summary": "Whitelist player.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/minecraft/players/whitelist",
+      "operationId": "unwhitelistPlayer",
+      "summary": "Unwhitelist player.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/client/servers/{server}/minecraft/players/op",
+      "operationId": "opPlayer",
+      "summary": "Op player.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/minecraft/players/op",
+      "operationId": "deopPlayer",
+      "summary": "Deop player.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/client/servers/{server}/minecraft/players/ban",
+      "operationId": "banPlayer",
+      "summary": "Ban player.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/minecraft/players/ban",
+      "operationId": "unbanPlayer",
+      "summary": "Unban player.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/client/servers/{server}/minecraft/players/ban-ip",
+      "operationId": "bansAnIPFromTheServer",
+      "summary": "Bans an IP from the server.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/minecraft/players/ban-ip",
+      "operationId": "unbanIP",
+      "summary": "Unban IP.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/client/servers/{server}/minecraft/players/ban-ip-player",
+      "operationId": "banPlayerIP",
+      "summary": "Ban player IP.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/players/kick",
+      "operationId": "kickPlayer",
+      "summary": "Kick player.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/players/clear",
+      "operationId": "clearPlayerInventory",
+      "summary": "Clear player inventory.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/players/wipe",
+      "operationId": "wipePlayer",
+      "summary": "Wipe player.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/players/whisper",
+      "operationId": "messagePlayer",
+      "summary": "Message player.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/players/kill",
+      "operationId": "killPlayer",
+      "summary": "Kill player.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/plugins",
+      "operationId": "searchPlugins",
+      "summary": "Search plugins.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [
+        {
+          "name": "provider",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "Plugin provider to list plugins from."
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": true,
+          "type": "integer",
+          "description": "Page number for pagination. Must be at least 1."
+        },
+        {
+          "name": "page_size",
+          "in": "query",
+          "required": true,
+          "type": "integer",
+          "description": "Maximum number of resources to return per-page. Must not be greater than 50."
+        },
+        {
+          "name": "search_query",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Optional search query to filter plugins by."
+        },
+        {
+          "name": "minecraft_version",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Optional Minecraft version to filter for plugin compatibility."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/minecraft/plugins/versions",
+      "operationId": "getPluginVersions",
+      "summary": "Get plugin versions.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [
+        {
+          "name": "provider",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "Plugin provider to fetch the plugin from."
+        },
+        {
+          "name": "pluginId",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "Plugin ID to fetch versions for."
+        }
+      ],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/minecraft/plugins/install",
+      "operationId": "installPlugin",
+      "summary": "Install plugin.",
+      "tags": [
+        "Server - Minecraft"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/network/allocations",
+      "operationId": "getServerAllocations",
+      "summary": "Get server allocations.",
+      "tags": [
+        "Server - Networking"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/network/allocations",
+      "operationId": "addServerAllocation",
+      "summary": "Add server allocation.",
+      "tags": [
+        "Server - Networking"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/network/allocations/{allocation}",
+      "operationId": "updateServerAllocation",
+      "summary": "Update server allocation.",
+      "tags": [
+        "Server - Networking"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/client/servers/{server}/network/allocations/{allocation}",
+      "operationId": "setServerPrimaryAllocation",
+      "summary": "Set server primary allocation.",
+      "tags": [
+        "Server - Networking"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/network/allocations/{allocation}",
+      "operationId": "deleteServerAllocation",
+      "summary": "Delete server allocation.",
+      "tags": [
+        "Server - Networking"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/schedules",
+      "operationId": "getServerSchedules",
+      "summary": "Get server schedules.",
+      "tags": [
+        "Server - Schedules"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/schedules",
+      "operationId": "createServerSchedule",
+      "summary": "Create server schedule.",
+      "tags": [
+        "Server - Schedules"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/schedules/{schedule}",
+      "operationId": "getServerSchedule",
+      "summary": "Get server schedule.",
+      "tags": [
+        "Server - Schedules"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/schedules/{schedule}",
+      "operationId": "updateServerSchedule",
+      "summary": "Update server schedule.",
+      "tags": [
+        "Server - Schedules"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/schedules/{schedule}",
+      "operationId": "deleteServerSchedule",
+      "summary": "Delete server schedule.",
+      "tags": [
+        "Server - Schedules"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/schedules/{schedule}/execute",
+      "operationId": "executeServerSchedule",
+      "summary": "Execute server schedule.",
+      "tags": [
+        "Server - Schedules"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/schedules/{schedule}/tasks",
+      "operationId": "createServerScheduleTask",
+      "summary": "Create server schedule task.",
+      "tags": [
+        "Server - Schedules"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/schedules/{schedule}/tasks/{task}",
+      "operationId": "updateServerScheduleTask",
+      "summary": "Update server schedule task.",
+      "tags": [
+        "Server - Schedules"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/schedules/{schedule}/tasks/{task}",
+      "operationId": "deleteServerScheduleTask",
+      "summary": "Delete server schedule task.",
+      "tags": [
+        "Server - Schedules"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/startup",
+      "operationId": "getServerVariables",
+      "summary": "Get server variables.",
+      "tags": [
+        "Server - Startup"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "PUT",
+      "path": "/api/client/servers/{server}/startup/variable",
+      "operationId": "updateServerVariable",
+      "summary": "Update server variable.",
+      "tags": [
+        "Server - Startup"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/client/servers/{server}/startup/variables",
+      "operationId": "updateServerVariables",
+      "summary": "Update server variables.",
+      "tags": [
+        "Server - Startup"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/subservers",
+      "operationId": "getSubservers",
+      "summary": "Get subservers.",
+      "tags": [
+        "Server - Subservers"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/subservers",
+      "operationId": "createSubserver",
+      "summary": "Create subserver.",
+      "tags": [
+        "Server - Subservers"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/subservers/{subserver}",
+      "operationId": "deleteSubserver",
+      "summary": "Delete subserver.",
+      "tags": [
+        "Server - Subservers"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/client/servers/{server}/subservers/{subserver}",
+      "operationId": "updateSubserver",
+      "summary": "Update subserver.",
+      "tags": [
+        "Server - Subservers"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/subservers/{subserver}/subusers",
+      "operationId": "syncSubusers",
+      "summary": "Sync subusers.",
+      "tags": [
+        "Server - Subservers"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/users",
+      "operationId": "getServerSubusers",
+      "summary": "Get server subusers.",
+      "tags": [
+        "Server - Subusers"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/users",
+      "operationId": "addServerSubuser",
+      "summary": "Add server subuser.",
+      "tags": [
+        "Server - Subusers"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/users/{user}",
+      "operationId": "getServerSubuser",
+      "summary": "Get server subuser.",
+      "tags": [
+        "Server - Subusers"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/users/{user}",
+      "operationId": "updateServerSubuser",
+      "summary": "Update server subuser.",
+      "tags": [
+        "Server - Subusers"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/users/{user}",
+      "operationId": "removeServerSubuser",
+      "summary": "Remove server subuser.",
+      "tags": [
+        "Server - Subusers"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/client/servers/{server}/tasks",
+      "operationId": "getServerTasks",
+      "summary": "Get server tasks.",
+      "tags": [
+        "Server - Tasks"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/client/servers/{server}/tasks",
+      "operationId": "cancelServerTask",
+      "summary": "Cancel server task.",
+      "tags": [
+        "Server - Tasks"
+      ],
+      "parameters": [],
+      "hasRequestBody": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/client/servers/{server}/tasks/{eggTask}",
+      "operationId": "runServerTask",
+      "summary": "Run server task.",
+      "tags": [
+        "Server - Tasks"
+      ],
+      "parameters": [],
+      "hasRequestBody": true
+    }
+  ]
+}

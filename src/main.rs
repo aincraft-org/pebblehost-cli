@@ -14,6 +14,8 @@ enum CliError {
     Request(#[from] reqwest::Error),
     #[error("PebbleHost API error ({status}): {message}")]
     Api { status: StatusCode, message: String },
+    #[error("invalid input: {0}")]
+    Input(String),
 }
 
 #[derive(Parser, Debug)]
@@ -51,6 +53,8 @@ enum Command {
     Plugins(PluginArgs),
     Modpacks(ModpackArgs),
     Files(FilesArgs),
+    ApiCall(ApiCallArgs),
+    Operations,
     FileSearch(FileSearchArgs),
     File(FileArgs),
 }
@@ -115,7 +119,19 @@ struct FileArgs {
     server_id: String,
     path: String,
 }
-
+#[derive(Args, Debug)]
+struct ApiCallArgs {
+    /// HTTP method: GET, POST, PUT, PATCH, or DELETE.
+    method: String,
+    /// API path, with or without a leading slash.
+    path: String,
+    /// Query parameter in KEY=VALUE form; repeat for multiple parameters.
+    #[arg(long, value_name = "KEY=VALUE", action = clap::ArgAction::Append)]
+    query: Vec<String>,
+    /// Raw JSON request body.
+    #[arg(long, value_name = "JSON")]
+    body: Option<String>,
+}
 struct Api {
     client: Client,
     base_url: String,
@@ -180,6 +196,49 @@ enum Response {
 
 fn path_server(server: &str, suffix: &str) -> String {
     format!("/api/client/servers/{server}{suffix}")
+}
+async fn api_call(api: &Api, args: ApiCallArgs) -> Result<Response, CliError> {
+    let method = match args.method.to_ascii_uppercase().as_str() {
+        "GET" => Method::GET,
+        "POST" => Method::POST,
+        "PUT" => Method::PUT,
+        "PATCH" => Method::PATCH,
+        "DELETE" => Method::DELETE,
+        other => return Err(CliError::Input(format!("unsupported HTTP method: {other}"))),
+    };
+
+    let path = if args.path.starts_with('/') {
+        args.path
+    } else {
+        format!("/{}", args.path)
+    };
+
+    let query_pairs: Vec<(String, String)> = args
+        .query
+        .into_iter()
+        .map(|pair| {
+            pair.split_once('=')
+                .map(|(key, value)| (key.to_owned(), value.to_owned()))
+                .ok_or_else(|| CliError::Input(format!("query must be KEY=VALUE: {pair}")))
+        })
+        .collect::<Result<_, _>>()?;
+    let query: Vec<(&str, String)> = query_pairs
+        .iter()
+        .map(|(key, value)| (key.as_str(), value.clone()))
+        .collect();
+    let body = args
+        .body
+        .map(|body| serde_json::from_str::<Value>(&body))
+        .transpose()
+        .map_err(|error| CliError::Input(format!("invalid JSON body: {error}")))?;
+
+    api.request(method, &path, &query, body).await
+}
+
+async fn operations() -> Result<Response, CliError> {
+    let value: Value = serde_json::from_str(include_str!("operations.json"))
+        .map_err(|error| CliError::Input(format!("invalid bundled operations: {error}")))?;
+    Ok(Response::Json(value))
 }
 
 async fn execute(api: &Api, command: Command) -> Result<Response, CliError> {
@@ -327,6 +386,8 @@ async fn execute(api: &Api, command: Command) -> Result<Response, CliError> {
             )
             .await
         }
+        Command::ApiCall(args) => api_call(api, args).await,
+        Command::Operations => operations().await,
     }
 }
 
@@ -362,12 +423,20 @@ async fn search(
 }
 
 async fn run(cli: Cli) -> Result<Response, CliError> {
-    let token = cli
-        .token
+    let Cli {
+        token,
+        base_url,
+        command,
+        ..
+    } = cli;
+    if matches!(command, Command::Operations) {
+        return operations().await;
+    }
+    let token = token
         .as_ref()
         .filter(|t| !t.trim().is_empty())
         .ok_or(CliError::MissingToken)?;
-    execute(&Api::new(cli.base_url, token.to_owned()), cli.command).await
+    execute(&Api::new(base_url, token.to_owned()), command).await
 }
 
 fn sort_value(value: Value) -> Value {
@@ -651,6 +720,46 @@ mod tests {
         if let Response::Json(value) = resp {
             let sorted = sort_value(value);
             assert_eq!(serde_json::to_string(&sorted).unwrap(), r#"{"a":2,"z":1}"#);
+        }
+    }
+
+    #[tokio::test]
+    async fn api_call_sends_method_path_query_and_body() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/api/client/servers/srv-1/command"))
+            .and(header("Authorization", "Bearer secret"))
+            .and(query_param("dry_run", "true"))
+            .and(body_json(json!({"command": "say hi"})))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({"ok": true})))
+            .mount(&server)
+            .await;
+
+        let cli = cli_with(
+            "secret",
+            server.uri(),
+            Command::ApiCall(ApiCallArgs {
+                method: "POST".into(),
+                path: "/api/client/servers/srv-1/command".into(),
+                query: vec!["dry_run=true".into()],
+                body: Some(r#"{"command":"say hi"}"#.into()),
+            }),
+        );
+        assert_eq!(run(cli).await.unwrap(), Response::Json(json!({"ok": true})));
+    }
+
+    #[tokio::test]
+    async fn operations_returns_bundled_api_operations() {
+        let cli = cli_with("secret", "http://unused".into(), Command::Operations);
+        match run(cli).await.unwrap() {
+            Response::Json(value) => {
+                let operations = value
+                    .get("operations")
+                    .and_then(Value::as_array)
+                    .expect("operations array");
+                assert_eq!(operations.len(), 141);
+            }
+            _ => panic!("expected JSON operations"),
         }
     }
 }
