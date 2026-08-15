@@ -1,6 +1,7 @@
 use clap::{Args, Parser, Subcommand};
 use reqwest::{Client, Method, StatusCode};
 use serde_json::{json, Value};
+use std::time::Duration;
 use thiserror::Error;
 
 const DEFAULT_BASE_URL: &str = "https://panel.pebblehost.com";
@@ -32,6 +33,7 @@ struct Cli {
 }
 
 #[derive(Subcommand, Debug)]
+#[allow(clippy::enum_variant_names)]
 enum Command {
     Account,
     Servers,
@@ -118,21 +120,26 @@ struct Api {
     base_url: String,
     token: String,
 }
+
 impl Api {
     fn new(base_url: String, token: String) -> Self {
         Self {
-            client: Client::new(),
+            client: Client::builder()
+                .timeout(Duration::from_secs(30))
+                .build()
+                .expect("reqwest client should build"),
             base_url: base_url.trim_end_matches('/').to_owned(),
             token,
         }
     }
+
     async fn request(
         &self,
         method: Method,
         path: &str,
         query: &[(&str, String)],
         body: Option<Value>,
-    ) -> Result<Value, CliError> {
+    ) -> Result<Response, CliError> {
         let mut req = self
             .client
             .request(method, format!("{}{}", self.base_url, path))
@@ -148,27 +155,29 @@ impl Api {
         if !status.is_success() {
             return Err(CliError::Api {
                 status,
-                message: if text.is_empty() {
-                    status.to_string()
-                } else {
-                    text
-                },
+                message: if text.is_empty() { status.to_string() } else { text },
             });
         }
         if text.is_empty() {
-            return Ok(Value::Null);
+            return Ok(Response::Json(Value::Null));
         }
-        serde_json::from_str(&text).map_err(|e| CliError::Api {
-            status,
-            message: format!("invalid JSON response: {e}"),
-        })
+        Ok(serde_json::from_str(&text)
+            .map(Response::Json)
+            .unwrap_or_else(|_| Response::Text(text)))
     }
+}
+
+#[derive(Debug, PartialEq)]
+enum Response {
+    Json(Value),
+    Text(String),
 }
 
 fn path_server(server: &str, suffix: &str) -> String {
     format!("/api/client/servers/{server}{suffix}")
 }
-async fn execute(api: &Api, command: Command) -> Result<Value, CliError> {
+
+async fn execute(api: &Api, command: Command) -> Result<Response, CliError> {
     match command {
         Command::Account => {
             api.request(Method::GET, "/api/client/account", &[], None)
@@ -315,6 +324,8 @@ async fn execute(api: &Api, command: Command) -> Result<Value, CliError> {
         }
     }
 }
+
+#[allow(clippy::too_many_arguments)]
 async fn search(
     api: &Api,
     server_id: &str,
@@ -324,7 +335,7 @@ async fn search(
     search_query: Option<&str>,
     minecraft_version: Option<&str>,
     kind: &str,
-) -> Result<Value, CliError> {
+) -> Result<Response, CliError> {
     let mut q = vec![
         ("provider", provider.to_owned()),
         ("page", page.to_string()),
@@ -345,22 +356,53 @@ async fn search(
     .await
 }
 
+async fn run(cli: Cli) -> Result<Response, CliError> {
+    let token = cli
+        .token
+        .as_ref()
+        .filter(|t| !t.trim().is_empty())
+        .ok_or(CliError::MissingToken)?;
+    execute(&Api::new(cli.base_url, token.to_owned()), cli.command).await
+}
+
+fn sort_value(value: Value) -> Value {
+    match value {
+        Value::Object(map) => {
+            let mut entries: Vec<_> = map.into_iter().collect();
+            entries.sort_by(|a, b| a.0.cmp(&b.0));
+            Value::Object(
+                entries
+                    .into_iter()
+                    .map(|(k, v)| (k, sort_value(v)))
+                    .collect(),
+            )
+        }
+        Value::Array(arr) => Value::Array(arr.into_iter().map(sort_value).collect()),
+        other => other,
+    }
+}
+
+fn print_response(response: Response, json: bool) {
+    match response {
+        Response::Json(value) => {
+            let sorted = sort_value(value);
+            let output = if json {
+                sorted.to_string()
+            } else {
+                serde_json::to_string_pretty(&sorted).unwrap()
+            };
+            println!("{}", output);
+        }
+        Response::Text(text) => println!("{}", text),
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let cli = Cli::parse();
-    let result = match cli.token.filter(|t| !t.trim().is_empty()) {
-        Some(token) => execute(&Api::new(cli.base_url, token), cli.command).await,
-        None => Err(CliError::MissingToken),
-    };
-    match result {
-        Ok(value) => println!(
-            "{}",
-            if cli.json {
-                value.to_string()
-            } else {
-                serde_json::to_string_pretty(&value).unwrap()
-            }
-        ),
+    let as_json = cli.json;
+    match run(cli).await {
+        Ok(response) => print_response(response, as_json),
         Err(error) => {
             eprintln!("error: {error}");
             std::process::exit(1);
@@ -371,18 +413,236 @@ async fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use wiremock::{
+        matchers::{body_json, header, method, path, query_param},
+        Mock, MockServer, ResponseTemplate,
+    };
 
-    #[test]
-    fn server_paths_are_exact() {
-        assert_eq!(
-            path_server("srv-1", "/files/search"),
-            "/api/client/servers/srv-1/files/search"
-        );
+    fn test_api(server: &MockServer, token: &str) -> Api {
+        Api::new(server.uri(), token.to_owned())
     }
 
-    #[test]
-    fn empty_success_body_is_null() {
-        let value: Value = serde_json::from_str("null").unwrap();
-        assert!(value.is_null());
+    fn cli_with(token: &str, base_url: String, command: Command) -> Cli {
+        Cli {
+            token: Some(token.to_owned()),
+            base_url,
+            json: false,
+            command,
+        }
+    }
+
+    #[tokio::test]
+    async fn api_uses_bearer_and_decodes_json() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/api/client"))
+            .and(header("Authorization", "Bearer secret"))
+            .and(header("Accept", "application/json"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({"data": []})))
+            .mount(&server)
+            .await;
+        let api = test_api(&server, "secret");
+        let resp = api.request(Method::GET, "/api/client", &[], None).await.unwrap();
+        assert_eq!(resp, Response::Json(json!({"data": []})));
+    }
+
+    #[tokio::test]
+    async fn api_reports_api_errors() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/api/client/account"))
+            .and(header("Authorization", "Bearer secret"))
+            .respond_with(
+                ResponseTemplate::new(401)
+                    .set_body_json(json!({"errors": [{"detail": "Unauthenticated"}]})),
+            )
+            .mount(&server)
+            .await;
+        let api = test_api(&server, "secret");
+        let err = api
+            .request(Method::GET, "/api/client/account", &[], None)
+            .await
+            .unwrap_err();
+        match err {
+            CliError::Api { status, message } => {
+                assert_eq!(status, 401);
+                assert!(message.contains("Unauthenticated"));
+            }
+            _ => panic!("expected Api error, got {err:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn command_sends_user_command_body() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/api/client/servers/srv-1/command"))
+            .and(header("Authorization", "Bearer secret"))
+            .and(body_json(json!({"command": "say hello"})))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({"ok": true})))
+            .mount(&server)
+            .await;
+        let cli = cli_with(
+            "secret",
+            server.uri(),
+            Command::Command(CommandArgs {
+                server_id: "srv-1".into(),
+                command: "say hello".into(),
+            }),
+        );
+        let resp = run(cli).await.unwrap();
+        assert_eq!(resp, Response::Json(json!({"ok": true})));
+    }
+
+    #[tokio::test]
+    async fn power_sends_signal_body() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/api/client/servers/srv-1/power"))
+            .and(header("Authorization", "Bearer secret"))
+            .and(body_json(json!({"signal": "start"})))
+            .respond_with(ResponseTemplate::new(204))
+            .mount(&server)
+            .await;
+        let cli = cli_with(
+            "secret",
+            server.uri(),
+            Command::Power(PowerArgs {
+                server_id: "srv-1".into(),
+                action: "start".into(),
+            }),
+        );
+        let resp = run(cli).await.unwrap();
+        assert_eq!(resp, Response::Json(Value::Null));
+    }
+
+    #[tokio::test]
+    async fn resources_path_is_exact() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/api/client/servers/srv-1/resources"))
+            .and(header("Authorization", "Bearer secret"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({"resources": {}})))
+            .mount(&server)
+            .await;
+        let cli = cli_with(
+            "secret",
+            server.uri(),
+            Command::Resources(ServerId {
+                server_id: "srv-1".into(),
+            }),
+        );
+        let resp = run(cli).await.unwrap();
+        assert_eq!(resp, Response::Json(json!({"resources": {}})));
+    }
+
+    #[tokio::test]
+    async fn plugins_sends_documented_query() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/api/client/servers/srv-1/minecraft/plugins"))
+            .and(header("Authorization", "Bearer secret"))
+            .and(query_param("provider", "modrinth"))
+            .and(query_param("page", "2"))
+            .and(query_param("page_size", "10"))
+            .and(query_param("search_query", "worldedit"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({"data": []})))
+            .mount(&server)
+            .await;
+        let cli = cli_with(
+            "secret",
+            server.uri(),
+            Command::Plugins(PluginArgs {
+                server_id: "srv-1".into(),
+                provider: "modrinth".into(),
+                page: 2,
+                page_size: 10,
+                search_query: Some("worldedit".into()),
+                minecraft_version: None,
+            }),
+        );
+        let resp = run(cli).await.unwrap();
+        assert_eq!(resp, Response::Json(json!({"data": []})));
+    }
+
+    #[tokio::test]
+    async fn search_files_sends_documented_parameters() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/api/client/servers/srv-1/files/search"))
+            .and(header("Authorization", "Bearer secret"))
+            .and(query_param("root", "/plugins"))
+            .and(query_param("query", "paper"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({"data": []})))
+            .mount(&server)
+            .await;
+        let cli = cli_with(
+            "secret",
+            server.uri(),
+            Command::FileSearch(FileSearchArgs {
+                server_id: "srv-1".into(),
+                query: "paper".into(),
+                root: "/plugins".into(),
+            }),
+        );
+        let resp = run(cli).await.unwrap();
+        assert_eq!(resp, Response::Json(json!({"data": []})));
+    }
+
+    #[tokio::test]
+    async fn raw_text_success_body_is_preserved() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/api/client/servers/srv-1/files/contents"))
+            .and(header("Authorization", "Bearer secret"))
+            .and(query_param("file", "server.properties"))
+            .respond_with(ResponseTemplate::new(200).set_body_string("motd=A Minecraft Server\n"))
+            .mount(&server)
+            .await;
+        let cli = cli_with(
+            "secret",
+            server.uri(),
+            Command::File(FileArgs {
+                server_id: "srv-1".into(),
+                path: "server.properties".into(),
+            }),
+        );
+        let resp = run(cli).await.unwrap();
+        assert_eq!(resp, Response::Text("motd=A Minecraft Server\n".into()));
+    }
+
+    #[tokio::test]
+    async fn run_requires_non_empty_token() {
+        let cli = Cli {
+            token: None,
+            base_url: "http://example.test".into(),
+            json: false,
+            command: Command::Servers,
+        };
+        let err = run(cli).await.unwrap_err();
+        assert!(matches!(err, CliError::MissingToken));
+    }
+
+    #[tokio::test]
+    async fn json_flag_produces_compact_sorted_output() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/api/client"))
+            .and(header("Authorization", "Bearer secret"))
+            .respond_with(ResponseTemplate::new(200).set_body_string(r#"{"z":1,"a":2}"#))
+            .mount(&server)
+            .await;
+        let cli = Cli {
+            token: Some("secret".into()),
+            base_url: server.uri(),
+            json: true,
+            command: Command::Servers,
+        };
+        let resp = run(cli).await.unwrap();
+        assert_eq!(resp, Response::Json(json!({"z": 1, "a": 2})));
+        if let Response::Json(value) = resp {
+            let sorted = sort_value(value);
+            assert_eq!(serde_json::to_string(&sorted).unwrap(), r#"{"a":2,"z":1}"#);
+        }
     }
 }
