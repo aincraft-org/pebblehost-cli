@@ -1,13 +1,11 @@
 # PebbleHost CLI
 
-A small Python CLI wrapper for the PebbleHost client API.
+A Rust command-line interface for the PebbleHost client API.
 
 ## Setup
 
 ```bash
-python -m venv .venv
-. .venv/bin/activate
-pip install -e .
+cargo install --path .
 export PEBBLEHOST_API_TOKEN=...
 ```
 
@@ -22,16 +20,6 @@ pebblehost command SERVER_ID --command "say hello"
 pebblehost --json servers
 ```
 
-The token is read from `PEBBLEHOST_API_TOKEN` by default. `--token` overrides it.
+The API token is read from `PEBBLEHOST_API_TOKEN` by default. Use `--token` to override it, and `--base-url` to point at a different panel.
 
-The implementation follows the published OpenAPI document at https://api.pebblehost.com/api.yaml and uses the documented bearer-token authentication.
-
-## Rust CLI
-
-The Rust port is built with Cargo:
-
-```bash
-cargo install --path .
-export PEBBLEHOST_API_TOKEN=...
-pebblehost servers
-```
+The implementation follows the published OpenAPI document at https://api.pebblehost.com/api.yaml and uses documented bearer-token authentication.
