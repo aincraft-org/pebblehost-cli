@@ -19,6 +19,7 @@ enum CliError {
 #[derive(Parser, Debug)]
 #[command(
     name = "pebblehost",
+    version,
     about = "Manage PebbleHost servers from the command line"
 )]
 struct Cli {
@@ -155,7 +156,11 @@ impl Api {
         if !status.is_success() {
             return Err(CliError::Api {
                 status,
-                message: if text.is_empty() { status.to_string() } else { text },
+                message: if text.is_empty() {
+                    status.to_string()
+                } else {
+                    text
+                },
             });
         }
         if text.is_empty() {
@@ -442,7 +447,10 @@ mod tests {
             .mount(&server)
             .await;
         let api = test_api(&server, "secret");
-        let resp = api.request(Method::GET, "/api/client", &[], None).await.unwrap();
+        let resp = api
+            .request(Method::GET, "/api/client", &[], None)
+            .await
+            .unwrap();
         assert_eq!(resp, Response::Json(json!({"data": []})));
     }
 

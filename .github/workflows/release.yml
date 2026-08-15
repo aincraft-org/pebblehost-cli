@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Build and release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Compute dated version
+        id: version
+        run: |
+          date_part=$(date -u +%Y.%-m.%-d)
+          run_number=${{ github.run_number }}
+          release_version="${date_part}.${run_number}"
+          cargo_version="${date_part}+${run_number}"
+
+          echo "release_version=${release_version}" >> "$GITHUB_OUTPUT"
+          echo "cargo_version=${cargo_version}" >> "$GITHUB_OUTPUT"
+
+          echo "Release version: ${release_version}"
+          echo "Cargo version:   ${cargo_version}"
+
+      - name: Update package version
+        run: |
+          sed -i 's/^version = .*/version = "${{ steps.version.outputs.cargo_version }}"/' Cargo.toml
+          cargo update -p pebblehost-cli
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Commit version bump
+        run: |
+          git add Cargo.toml Cargo.lock
+          git commit -m "release: v${{ steps.version.outputs.release_version }} [skip ci]" || true
+          branch="${GITHUB_REF#refs/heads/}"
+          git push origin "HEAD:${branch}"
+
+      - name: Package binary
+        id: package
+        run: |
+          tag="v${{ steps.version.outputs.release_version }}"
+          sha=$(git rev-parse HEAD)
+
+          mkdir -p dist
+          cp target/release/pebblehost dist/pebblehost
+          tar -czf "dist/pebblehost-cli-${{ steps.version.outputs.release_version }}-x86_64-unknown-linux-gnu.tar.gz" -C dist pebblehost
+
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.package.outputs.tag }}" \
+            --target "${{ steps.package.outputs.sha }}" \
+            --title "Release ${{ steps.package.outputs.tag }}" \
+            --notes "Version ${{ steps.version.outputs.release_version }} built from GitHub Actions run ${{ github.run_number }}." \
+            "dist/pebblehost-cli-${{ steps.version.outputs.release_version }}-x86_64-unknown-linux-gnu.tar.gz"
