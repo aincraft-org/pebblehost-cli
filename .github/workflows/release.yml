@@ -10,9 +10,14 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  release:
-    name: Build and release
+  version:
+    name: Compute and commit version
     runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.version.outputs.release_version }}
+      cargo_version: ${{ steps.version.outputs.cargo_version }}
+      tag: ${{ steps.version.outputs.tag }}
+      sha: ${{ steps.commit.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,9 +25,6 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Rust build
-        uses: Swatinem/rust-cache@v2
 
       - name: Configure git
         run: |
@@ -34,11 +36,14 @@ jobs:
         run: |
           date_part=$(date -u +%Y.%-m.%-d)
           run_number=${{ github.run_number }}
+
           release_version="${date_part}.${run_number}"
           cargo_version="${date_part}+${run_number}"
+          tag="v${release_version}"
 
           echo "release_version=${release_version}" >> "$GITHUB_OUTPUT"
           echo "cargo_version=${cargo_version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
 
           echo "Release version: ${release_version}"
           echo "Cargo version:   ${cargo_version}"
@@ -48,35 +53,110 @@ jobs:
           sed -i 's/^version = .*/version = "${{ steps.version.outputs.cargo_version }}"/' Cargo.toml
           cargo update -p pebblehost-cli
 
-      - name: Build release binary
-        run: cargo build --release --locked
-
       - name: Commit version bump
+        id: commit
         run: |
           git add Cargo.toml Cargo.lock
-          git commit -m "release: v${{ steps.version.outputs.release_version }} [skip ci]" || true
+          git commit -m "release: ${{ steps.version.outputs.tag }} [skip ci]" || true
           branch="${GITHUB_REF#refs/heads/}"
           git push origin "HEAD:${branch}"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        run: |
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+  build:
+    name: Build ${{ matrix.target }}
+    needs: version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: x86_64-unknown-linux-gnu,    os: ubuntu-latest,  cross: false }
+          - { target: aarch64-unknown-linux-gnu,   os: ubuntu-latest,  cross: true }
+          - { target: armv7-unknown-linux-gnueabihf, os: ubuntu-latest, cross: true }
+          - { target: x86_64-apple-darwin,         os: macos-latest,   cross: false }
+          - { target: aarch64-apple-darwin,        os: macos-latest,   cross: false }
+          - { target: x86_64-pc-windows-msvc,      os: windows-latest, cross: false }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross
+        if: ${{ matrix.cross }}
+        run: cargo install cross
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Build release binary
+        shell: bash
+        run: |
+          if [ "${{ matrix.cross }}" = "true" ]; then
+            cross build --release --locked --target ${{ matrix.target }}
+          else
+            cargo build --release --locked --target ${{ matrix.target }}
+          fi
 
       - name: Package binary
-        id: package
+        shell: bash
         run: |
-          tag="v${{ steps.version.outputs.release_version }}"
-          sha=$(git rev-parse HEAD)
-
+          version="${{ needs.version.outputs.release_version }}"
+          target="${{ matrix.target }}"
           mkdir -p dist
-          cp target/release/pebblehost dist/pebblehost
-          tar -czf "dist/pebblehost-cli-${{ steps.version.outputs.release_version }}-x86_64-unknown-linux-gnu.tar.gz" -C dist pebblehost
 
-          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          if [ -f "target/${target}/release/pebblehost.exe" ]; then
+            exe="pebblehost.exe"
+          else
+            exe="pebblehost"
+          fi
+
+          cp "target/${target}/release/${exe}" "dist/${exe}"
+          tar -czf "dist/pebblehost-cli-${version}-${target}.tar.gz" -C dist "${exe}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.target }}
+          path: dist/pebblehost-cli-*
+
+  release:
+    name: Create GitHub Release
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
-          gh release create "${{ steps.package.outputs.tag }}" \
-            --target "${{ steps.package.outputs.sha }}" \
-            --title "Release ${{ steps.package.outputs.tag }}" \
-            --notes "Version ${{ steps.version.outputs.release_version }} built from GitHub Actions run ${{ github.run_number }}." \
-            "dist/pebblehost-cli-${{ steps.version.outputs.release_version }}-x86_64-unknown-linux-gnu.tar.gz"
+          tag="${{ needs.version.outputs.tag }}"
+
+          # Collect all packaged binaries from the matrix jobs
+          assets=()
+          while IFS= read -r -d '' asset; do
+            assets+=("$asset")
+          done < <(find dist -name 'pebblehost-cli-*' -type f -print0)
+
+          gh release create "${tag}" \
+            --target "${{ needs.version.outputs.sha }}" \
+            --title "Release ${tag}" \
+            --notes "Version ${{ needs.version.outputs.release_version }} built from GitHub Actions run ${{ github.run_number }}." \
+            "${assets[@]}"
