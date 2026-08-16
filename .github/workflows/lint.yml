@@ -32,3 +32,11 @@ jobs:
 
       - name: Run tests
         run: cargo test --all-features
+
+      - name: Lint install script
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck install.sh
+          else
+            sh -n install.sh
+          fi

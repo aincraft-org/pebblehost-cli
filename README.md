@@ -20,6 +20,32 @@ pebblehost api-call POST /api/client/servers/SERVER_ID/command \
 
 `api-call` accepts `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`, repeatable `--query KEY=VALUE` parameters, and a raw JSON `--body`. The default request base URL follows the published OpenAPI server, `https://panel.pebblehost.com`; override it with `--base-url`.
 
+## Install
+
+The easiest way to install on Linux, macOS, or WSL is with the one-line installer:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/install.sh | sh
+```
+
+This detects your OS and architecture, downloads the latest release, and places the `pebblehost` binary in `~/.local/bin` (or `/usr/local/bin` if that is not writable). Make sure the install directory is on your `PATH`.
+
+For a different install location:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/install.sh | sh -s -- --prefix /usr/local/bin
+```
+
+You can also pin a specific release:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/install.sh | sh -s -- --tag v2026.8.15.3
+```
+
+> Security note: piping scripts directly from the internet is convenient but risky. If you prefer, download `install.sh`, review it, and run it locally with `sh install.sh`.
+
+Supported platforms: x86_64/aarch64 Linux, x86_64/aarch64 macOS, and armv7 Linux.
+
 ## Setup
 
 ```bash
