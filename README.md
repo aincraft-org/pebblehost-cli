@@ -10,11 +10,11 @@ The CLI includes convenient commands for common operations and an escape hatch f
 
 ```bash
 # List the 141 operations in the bundled API inventory
-pebblehost operations
+pb operations
 
 # Call any documented endpoint directly
-pebblehost api-call GET /api/client/servers/SERVER_ID/resources
-pebblehost api-call POST /api/client/servers/SERVER_ID/command \
+pb api-call GET /api/client/servers/SERVER_ID/resources
+pb api-call POST /api/client/servers/SERVER_ID/command \
   --body '{"command":"say hello"}'
 ```
 
@@ -25,26 +25,36 @@ pebblehost api-call POST /api/client/servers/SERVER_ID/command \
 The easiest way to install on Linux, macOS, or WSL is with the one-line installer:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/scripts/install.sh | sh
 ```
 
-This detects your OS and architecture, downloads the latest release, and places the `pebblehost` binary in `~/.local/bin` (or `/usr/local/bin` if that is not writable). Make sure the install directory is on your `PATH`.
+This detects your OS and architecture, downloads the latest release, and places the `pb` binary in `~/.local/bin` (or `/usr/local/bin` if that is not writable). Make sure the install directory is on your `PATH`.
 
 For a different install location:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/install.sh | sh -s -- --prefix /usr/local/bin
+curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/scripts/install.sh | sh -s -- --prefix /usr/local/bin
 ```
 
 You can also pin a specific release:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/install.sh | sh -s -- --tag v2026.8.15.3
+curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/scripts/install.sh | sh -s -- --tag v2026.8.15.3
 ```
 
-> Security note: piping scripts directly from the internet is convenient but risky. If you prefer, download `install.sh`, review it, and run it locally with `sh install.sh`.
+> Security note: piping scripts directly from the internet is convenient but risky. If you prefer, download `scripts/install.sh`, review it, and run it locally with `sh scripts/install.sh`.
 
 Supported platforms: x86_64/aarch64 Linux, x86_64/aarch64 macOS, and armv7 Linux.
+
+## Update
+
+To update to the latest release, run:
+
+```bash
+pb update
+```
+
+This fetches the current updater script and re-runs the installer for the `pb` binary that is first on your `PATH`.
 
 ## Setup
 
@@ -56,12 +66,12 @@ export PEBBLEHOST_API_TOKEN=...
 ## Usage
 
 ```bash
-pebblehost account
-pebblehost servers
-pebblehost server SERVER_ID
-pebblehost power SERVER_ID --action start
-pebblehost command SERVER_ID --command "say hello"
-pebblehost --json servers
+pb account
+pb servers
+pb server SERVER_ID
+pb power SERVER_ID --action start
+pb command SERVER_ID --command "say hello"
+pb --json servers
 ```
 
 The API token is read from `PEBBLEHOST_API_TOKEN` by default. Use `--token` to override it, and `--base-url` to point at a different panel.

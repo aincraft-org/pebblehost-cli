@@ -38,7 +38,7 @@ A Rust CLI with `clap` and `reqwest` is usually the source of truth for itself. 
 
 ## Common Mistakes
 
-- Running `./target/debug/pebblehost` without checking which binary is current; use `cargo run --`.
+- Running `./target/debug/pb` without checking which binary is current; use `cargo run --`.
 - Passing secrets as `--token` in shared scripts or screenshots.
 - Skipping `--help` and guessing argument names.
 - Using `api-call` when a typed subcommand already exists.

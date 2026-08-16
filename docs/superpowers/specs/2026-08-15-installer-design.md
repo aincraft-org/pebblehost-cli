@@ -1,12 +1,12 @@
-# `pebblehost` Installer Design
+# `pb` Installer Design
 
 ## Goal
 
-Provide a one-line curl installer so Linux, macOS, and WSL users can install the matching `pebblehost` release binary without manually picking an asset.
+Provide a one-line curl installer so Linux, macOS, and WSL users can install the matching `pb` release binary without manually picking an asset.
 
 ## Target
 
-POSIX-compatible shell script at the repo root: `install.sh`.
+POSIX-compatible shell script at `scripts/install.sh`.
 
 ## Behavior
 
@@ -21,18 +21,18 @@ POSIX-compatible shell script at the repo root: `install.sh`.
   - Optional `--tag vX.Y.Z.run` or `--version X.Y.Z.run`
 - Download the matching `pebblehost-cli-<version>-<target>.tar.gz` asset.
 - Verify the download succeeded (non-empty, HTTP 200).
-- Extract the `pebblehost` binary.
+- Extract the `pb` binary.
 - Install it to a `bin/` directory:
   - Default prefix: first writable of `~/.local/bin`, `/usr/local/bin`.
   - Optional `--prefix <dir>`.
   - If `/usr/local/bin` is chosen and not writable, prompt to re-run with `sudo`.
-- Run `pebblehost --version` and print the install path.
+- Run `pb --version` and print the install path.
 - Exit with a clear message on unsupported platform or download failure.
 
 ## CLI flags
 
 ```text
--s, --skip-version-check   do not run pebblehost --version after install
+-s, --skip-version-check   do not run pb --version after install
 -f, --force                overwrite existing binary
 -p, --prefix <dir>         install directory (default: first writable of ~/.local/bin, /usr/local/bin)
 -t, --tag <tag>            install a specific release tag (e.g. v2026.8.15.3)
@@ -43,13 +43,13 @@ POSIX-compatible shell script at the repo root: `install.sh`.
 ## One-line install command
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/scripts/install.sh | sh
 ```
 
 With a prefix:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/install.sh | sh -s -- --prefix /usr/local/bin
+curl -sSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/scripts/install.sh | sh -s -- --prefix /usr/local/bin
 ```
 
 ## README update
@@ -60,7 +60,7 @@ Add an "Install" section with the one-liner, supported platforms, and the manual
 
 - Manual: run the script in a clean container/VM for each supported target.
 - CI: add a shell lint step (`shellcheck` if available).
-- Smoke test: run `pebblehost --version` after install.
+- Smoke test: run `pb --version` after install.
 
 ## Out of scope
 

@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 [[bin]]
-name = "pebblehost"
+name = "pb"
 path = "src/main.rs"
 
 [dependencies]
@@ -15,7 +15,7 @@ clap = { version = "4.5", features = ["derive", "env"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "process", "rt-multi-thread"] }
 thiserror = "2"
 url = "2"
 

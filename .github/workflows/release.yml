@@ -117,10 +117,10 @@ jobs:
           target="${{ matrix.target }}"
           mkdir -p dist
 
-          if [ -f "target/${target}/release/pebblehost.exe" ]; then
-            exe="pebblehost.exe"
+          if [ -f "target/${target}/release/pb.exe" ]; then
+            exe="pb.exe"
           else
-            exe="pebblehost"
+            exe="pb"
           fi
 
           cp "target/${target}/release/${exe}" "dist/${exe}"

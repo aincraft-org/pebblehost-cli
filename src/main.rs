@@ -1,7 +1,7 @@
 use clap::{Args, Parser, Subcommand};
 use reqwest::{Client, Method, StatusCode};
 use serde_json::{json, Value};
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 
 const DEFAULT_BASE_URL: &str = "https://panel.pebblehost.com";
@@ -16,11 +16,15 @@ enum CliError {
     Api { status: StatusCode, message: String },
     #[error("invalid input: {0}")]
     Input(String),
+    #[error("io error: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("update failed")]
+    Update,
 }
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "pebblehost",
+    name = "pb",
     version,
     about = "Manage PebbleHost servers from the command line"
 )]
@@ -57,6 +61,7 @@ enum Command {
     Operations,
     FileSearch(FileSearchArgs),
     File(FileArgs),
+    Update,
 }
 
 #[derive(Args, Debug)]
@@ -388,6 +393,7 @@ async fn execute(api: &Api, command: Command) -> Result<Response, CliError> {
         }
         Command::ApiCall(args) => api_call(api, args).await,
         Command::Operations => operations().await,
+        Command::Update => update().await,
     }
 }
 
@@ -432,6 +438,9 @@ async fn run(cli: Cli) -> Result<Response, CliError> {
     if matches!(command, Command::Operations) {
         return operations().await;
     }
+    if matches!(command, Command::Update) {
+        return update().await;
+    }
     let token = token
         .as_ref()
         .filter(|t| !t.trim().is_empty())
@@ -471,10 +480,85 @@ fn print_response(response: Response, json: bool) {
     }
 }
 
+const VERSION_REMINDER_INTERVAL: Duration = Duration::from_secs(24 * 60 * 60);
+const VERSION_REMINDER_CONFIG_DIR: &str = ".config/pebblehost-cli";
+const VERSION_REMINDER_FILE: &str = "version-reminder";
+
+fn version_reminder_path() -> Option<std::path::PathBuf> {
+    std::env::var_os("HOME").map(|home| {
+        let mut path = std::path::PathBuf::from(home);
+        path.push(VERSION_REMINDER_CONFIG_DIR);
+        path.push(VERSION_REMINDER_FILE);
+        path
+    })
+}
+
+fn maybe_show_version_reminder(json: bool, command: &Command) {
+    if json {
+        return;
+    }
+    if matches!(command, Command::Update) {
+        return;
+    }
+    let Some(path) = version_reminder_path() else {
+        return;
+    };
+
+    let current_version = env!("CARGO_PKG_VERSION");
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let mut should_print = true;
+
+    if let Ok(content) = std::fs::read_to_string(&path) {
+        let mut lines = content.lines();
+        if let (Some(stored_version), Some(stored_ts)) = (lines.next(), lines.next()) {
+            if stored_version == current_version {
+                if let Ok(ts) = stored_ts.parse::<u64>() {
+                    if now.saturating_sub(ts) < VERSION_REMINDER_INTERVAL.as_secs() {
+                        should_print = false;
+                    }
+                }
+            }
+        }
+    }
+
+    if should_print {
+        eprintln!(
+            "pb {} is installed. Run `pb update` to check for the latest version.",
+            current_version
+        );
+        if let Some(parent) = path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        let _ = std::fs::write(&path, format!("{}\n{}\n", current_version, now));
+    }
+}
+
+async fn update() -> Result<Response, CliError> {
+    eprintln!("updating pb...");
+    let script = "set -e; tmp=$(mktemp); curl -fsSL https://raw.githubusercontent.com/aincraft-org/pebblehost-cli/master/scripts/update.sh -o \"$tmp\"; sh \"$tmp\"";
+    let status = tokio::process::Command::new("sh")
+        .arg("-c")
+        .arg(script)
+        .status()
+        .await?;
+
+    if status.success() {
+        Ok(Response::Text(
+            "pb updated successfully. Run `pb --version` to verify.".to_string(),
+        ))
+    } else {
+        Err(CliError::Update)
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let cli = Cli::parse();
     let as_json = cli.json;
+    maybe_show_version_reminder(as_json, &cli.command);
     match run(cli).await {
         Ok(response) => print_response(response, as_json),
         Err(error) => {

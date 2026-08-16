@@ -9,19 +9,19 @@ usage() {
   cat <<EOF
 Usage: install.sh [OPTIONS]
 
-Install the pebblehost CLI from GitHub releases.
+Install the pb CLI from GitHub releases.
 
 Options:
   -p, --prefix <dir>       Install directory (default: first writable of ~/.local/bin, /usr/local/bin)
   -t, --tag <tag>          Release tag, e.g. v2026.8.15.3
   -v, --version <version>  Release version, e.g. 2026.8.15.3
   -f, --force              Overwrite existing binary
-  -s, --skip-version-check Do not run pebblehost --version after install
+  -s, --skip-version-check Do not run pb --version after install
   -h, --help               Show this help
 
 Examples:
-  curl -sSL https://raw.githubusercontent.com/${REPO}/master/install.sh | sh
-  curl -sSL https://raw.githubusercontent.com/${REPO}/master/install.sh | sh -s -- --prefix /usr/local/bin
+  curl -sSL https://raw.githubusercontent.com/${REPO}/master/scripts/install.sh | sh
+  curl -sSL https://raw.githubusercontent.com/${REPO}/master/scripts/install.sh | sh -s -- --prefix /usr/local/bin
 EOF
 }
 
@@ -127,7 +127,7 @@ fi
 asset="pebblehost-cli-${version}-${target}.tar.gz"
 download_url="https://github.com/${REPO}/releases/download/${tag}/${asset}"
 
-info "installing pebblehost ${version} for ${target}"
+info "installing pb ${version} for ${target}"
 
 # Resolve install prefix
 if [ -z "$prefix" ]; then
@@ -164,12 +164,12 @@ info "extracting..."
 tar -xzf "${tmpdir}/${asset}" -C "$tmpdir" || err "failed to extract ${asset}"
 
 # Locate extracted binary
-if [ -f "${tmpdir}/pebblehost" ]; then
-  binary="${tmpdir}/pebblehost"
-elif [ -f "${tmpdir}/pebblehost.exe" ]; then
-  binary="${tmpdir}/pebblehost.exe"
+if [ -f "${tmpdir}/pb" ]; then
+  binary="${tmpdir}/pb"
+elif [ -f "${tmpdir}/pb.exe" ]; then
+  binary="${tmpdir}/pb.exe"
 else
-  err "could not find pebblehost binary in the extracted archive"
+  err "could not find pb binary in the extracted archive"
 fi
 
 # Install
@@ -184,13 +184,13 @@ info "installed: ${dest}"
 
 # Verify
 if [ "$skip_version_check" -ne 1 ]; then
-  if command -v pebblehost >/dev/null 2>&1 && pebblehost --version >/dev/null 2>&1; then
-    installed_version="$(pebblehost --version 2>&1)"
+  if command -v pb >/dev/null 2>&1 && pb --version >/dev/null 2>&1; then
+    installed_version="$(pb --version 2>&1)"
     info "verified: ${installed_version}"
   elif "$dest" --version >/dev/null 2>&1; then
     installed_version="$("$dest" --version 2>&1)"
     info "verified: ${installed_version}"
   else
-    info "install complete; add ${prefix} to your PATH to run pebblehost"
+    info "install complete; add ${prefix} to your PATH to run pb"
   fi
 fi
